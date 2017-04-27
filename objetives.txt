@@ -1,0 +1,19 @@
+-create list of filepaths
+    format: !number@filepath
+-make an vector of words
+    -search through entire file
+    -exclude stop words
+-sort vector
+    <include> algorithm
+    sort(stringVec.begin(), stringVec.end());
+-put sorted words onto textfile
+    -simple write program
+-add locations for everyword onto the textfile
+    -love you long time
+
+
+text file structure: !word@path#lineNumber@path#lineNumber..etc
+
+Features: 
+    -find the title of the book in the file for each one
+    -output books first then click on one to output results for that one?
