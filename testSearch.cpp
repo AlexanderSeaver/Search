@@ -152,9 +152,12 @@ int stringMatchCount(string file, string word) {
     infile.open(fileWithPath.c_str());
     //    cout << "open:" << fileWithPath << endl;
     getline(infile,line);
-    while(!infile.eof()){
+	int lines = 0;
+	int words;
+     while(!infile.eof() && lines++ < 10000){
+		 words = 0;
       // normalize to lower case
-      while (line.length()>0) {
+      while (line.length()>0 && words++ < 100) {
 	w = getNext(line);
 	transform(w.begin(), w.end(), w.begin(), ::tolower);
 	//cout << "*" << w << "*";
