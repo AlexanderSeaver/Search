@@ -6,9 +6,9 @@
 
 using namespace std;
 
-void ProcessDirectory(string directory,string word);
-void ProcessFile(string file,string word);
-void ProcessEntity(struct dirent* entity,string word);
+void ProcessDirectory(string directory,string word, ofstream& filePaths);
+void ProcessFile(string file,string word, ofstream& filePaths);
+void ProcessEntity(struct dirent* entity,string word, ofstream& filePaths);
 bool hasEnding (string const &fullString, string const &ending);
 int stringMatchCount(string file, string word);
 
@@ -18,19 +18,22 @@ int matchCount = 0;
 int fileMatchCount = 0;
 long long wordCount = 0;
 string delimiters = " ,.;:?'\"()[]";
+unsigned short pathNum = 0;
 
 int main()
 {
-  string word;
-  string directory = "";
-  cout << "Word to search for: ";
-  cin >> word;
-  // Convert to lower case
-  transform(word.begin(), word.end(), word.begin(), ::tolower);
-  ProcessDirectory(directory,word);
-  cout << "The word \"" << word << "\" found " << matchCount << " times in " << fileMatchCount << " books and " << wordCount << " words" << endl; 
-  cout << "Total Books:" << fileCount << endl;
-  return 0;
+	ofstream filePaths;
+	filePaths.open("filePaths.txt");
+	string word;
+	string directory = "";
+	cout << "Word to search for: ";
+	cin >> word;
+	// Convert to lower case
+	transform(word.begin(), word.end(), word.begin(), ::tolower);
+	ProcessDirectory(directory,word,filePaths);
+	cout << "The word \"" << word << "\" found " << matchCount << " times in " << fileMatchCount << " books and " << wordCount << " words" << endl; 
+	cout << "Total Books:" << fileCount << endl;
+	return 0;
 }
 
 bool hasEnding (string const &fullString, string const &ending) {
@@ -41,7 +44,7 @@ bool hasEnding (string const &fullString, string const &ending) {
   }
 }
 
-void ProcessDirectory(string directory, string word)
+void ProcessDirectory(string directory, string word, ofstream& filePaths)
 {
   string dirToOpen = path + directory;
   DIR *dir;
@@ -62,7 +65,7 @@ void ProcessDirectory(string directory, string word)
 
   while(entity != NULL)
     {
-      ProcessEntity(entity,word);
+      ProcessEntity(entity,word,filePaths);
       entity = readdir(dir);
     }
 
@@ -71,7 +74,7 @@ void ProcessDirectory(string directory, string word)
   closedir(dir);
 }
 
-void ProcessEntity(struct dirent* entity, string word)
+void ProcessEntity(struct dirent* entity, string word, ofstream& filePaths)
 {
   //find entity type
   if(entity->d_type == DT_DIR)
@@ -83,13 +86,13 @@ void ProcessEntity(struct dirent* entity, string word)
 	}
 
       //it's an directory so process it
-      ProcessDirectory(string(entity->d_name),word);
+      ProcessDirectory(string(entity->d_name),word,filePaths);
       return;
     }
 
   if(entity->d_type == DT_REG)
     {//regular file
-      ProcessFile(string(entity->d_name), word);
+      ProcessFile(string(entity->d_name), word, filePaths);
       return;
     }
 
@@ -98,18 +101,19 @@ void ProcessEntity(struct dirent* entity, string word)
   cout << "Not a file or directory: " << entity->d_name << endl;
 }
 
-void ProcessFile(string file, string word)
+void ProcessFile(string file, string word, ofstream& filePaths)
 {
   string fileType = ".txt";
   if (hasEnding(file,fileType)) {
       fileCount++;
       if (word.length()>0) {
 	int matches = stringMatchCount(file,word);
-	if (matches > 0) {
+	if (1) {
 	  fileMatchCount++;
 	  matchCount += matches;
-	  cout << "   " << path << file;
-	  cout << " " << matches << endl;;
+	  cout << "!" << pathNum << "@" << path << file << endl;
+	  filePaths << "!" << pathNum << "@" << path << file << endl;
+	  pathNum++;
 	}
       }
   }
