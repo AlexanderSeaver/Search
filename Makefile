@@ -13,7 +13,7 @@ CFLAGS= -std=c++11
 
 RM= /bin/rm -f
 
-all: SearchBooks testSearch PutCGI PutHTML
+all: SearchBooks testSearch  proofSearch PutCGI PutHTML
 
 SearchBooks.o: SearchBooks.cpp 
 	$(CC) -c $(CFLAGS) SearchBooks.cpp
@@ -25,7 +25,13 @@ testSearch.o: testSearch.cpp
 	$(CC) -c testSearch.cpp 
 
 testSearch: testSearch.o 
-	$(CC) testSearch.o -o testSearch 
+	$(CC) testSearch.o -o testSearch
+	
+proofSearch.o: proofSearch.cpp 
+	$(CC) -c proofSearch.cpp 
+
+proofSearch: proofSearch.o 
+	$(CC) proofSearch.o -o proofSearch	
 
 PutCGI: SearchBooks
 	chmod 757 SearchBooks

@@ -3,6 +3,8 @@
 #include <string>
 #include <dirent.h>
 #include <algorithm>
+#include <vector>
+#include <sstream>
 
 using namespace std;
 
@@ -19,20 +21,50 @@ int fileMatchCount = 0;
 long long wordCount = 0;
 string delimiters = " ,.;:?'\"()[]";
 unsigned short pathNum = 0;
+vector<string> stopList;
+vector<string> wordList;
+int wordListCounter = 0;
+int wordCounter = 0;
+int stopCount = 0;
+
 
 int main()
 {
-	ofstream filePaths;
-	filePaths.open("filePaths.txt");
+	ifstream fin;
+	fin.open("stopwords.txt");
+	string stopword;
+	while(!fin.eof()) //make the list of stopwords
+	{
+		getline(fin, stopword);
+		stopList.push_back(stopword);
+		stopCount++;
+	}
+	fin.close(); //close the stopwords text file
+	ofstream filePaths; //open the filepaths txt file
+	filePaths.open("filePaths.txt", std::ios_base::app);
 	string word;
 	string directory = "";
 	cout << "Word to search for: ";
 	cin >> word;
 	// Convert to lower case
 	transform(word.begin(), word.end(), word.begin(), ::tolower);
+	
 	ProcessDirectory(directory,word,filePaths);
+	
+	
+	cout << "Vector formed, beginning sort." << endl;
+	sort(wordList.begin(), wordList.end());
+	cout << "Sort finished, outputting to text file." << endl;
+	ofstream sortedWords;
+	sortedWords.open("sortedWords.txt");
+	for(int i = 0; i < wordListCounter; i++)
+	{
+		sortedWords << "!" << wordList[i] << "@" << endl;
+	}
+	sortedWords.close();
 	cout << "The word \"" << word << "\" found " << matchCount << " times in " << fileMatchCount << " books and " << wordCount << " words" << endl; 
 	cout << "Total Books:" << fileCount << endl;
+	filePaths.close();
 	return 0;
 }
 
@@ -63,7 +95,7 @@ void ProcessDirectory(string directory, string word, ofstream& filePaths)
   struct dirent *entity;
   entity = readdir(dir);
 
-  while(entity != NULL)
+  while(entity != NULL && wordListCounter < 25000)
     {
       ProcessEntity(entity,word,filePaths);
       entity = readdir(dir);
@@ -103,6 +135,8 @@ void ProcessEntity(struct dirent* entity, string word, ofstream& filePaths)
 
 void ProcessFile(string file, string word, ofstream& filePaths)
 {
+  ofstream log;
+  log.open("log.txt", std::ios_base::app);
   string fileType = ".txt";
   if (hasEnding(file,fileType)) {
       fileCount++;
@@ -111,12 +145,13 @@ void ProcessFile(string file, string word, ofstream& filePaths)
 	if (1) {
 	  fileMatchCount++;
 	  matchCount += matches;
-	  cout << "!" << pathNum << "@" << path << file << endl;
-	  filePaths << "!" << pathNum << "@" << path << file << endl;
+	  cout << path << file << endl; //when it encounters a new file
+	  log << path << file << endl;
 	  pathNum++;
 	}
       }
   }
+  log.close();
   //if you want to do something with the file add your code here
 }
 
@@ -155,21 +190,56 @@ int stringMatchCount(string file, string word) {
     string fileWithPath = path+file;
     infile.open(fileWithPath.c_str());
     //    cout << "open:" << fileWithPath << endl;
-    getline(infile,line);
 	int lines = 0;
 	int words;
-     while(!infile.eof() && lines++ < 10000){
-		 words = 0;
-      // normalize to lower case
-      while (line.length()>0 && words++ < 100) {
-	w = getNext(line);
-	transform(w.begin(), w.end(), w.begin(), ::tolower);
-	//cout << "*" << w << "*";
-	wordCount++;
-	if(word.compare(w) == 0) ++count;
-      }
-    getline(infile,line);
-    //cout << endl << line << endl;
+    while(!infile.eof() && lines++ < 10000)
+	{
+		words = 0;
+		// normalize to lower case
+		getline(infile,line);
+		//cout << line << endl;
+		while (line.length()>0 && words++ < 100) 
+		{
+			bool wordPresent = false;
+			bool stopPresent = false;
+			w = getNext(line);
+			transform(w.begin(), w.end(), w.begin(), ::tolower);
+			//cout << "*" << w << "*";
+			wordCount++;
+			for(int i = 0; i < stopCount; i++)
+			{
+				if(stopList[i] == w)
+				{
+					stopPresent = true;
+					//cout << "Stop True\n";
+				}
+			}
+			for(int i = 0; i < wordListCounter; i++)
+			{
+				if(wordList[i] == w)
+				{
+					wordPresent = true;
+					//cout << "Present True\n";
+				}
+			}
+			if(wordPresent == false && stopPresent == false)
+			{
+				/*if(!w.empty() && w[w.size()-1] == '\r')
+				{
+					w.erase(w.size()-1);
+				}*/
+				wordList.push_back(w);
+				cout << wordListCounter << endl;
+				wordListCounter++;
+			}
+			for(int i = 0; i < wordListCounter; i++)
+			{
+				//cout << "Word is: " << w << endl;
+				//cout << "Vector position " << i << " is: " << wordList[i] << endl;
+			}
+			//cin.get();
+		}
+		//cout << endl << line << endl;
     }
 
     infile.close();
