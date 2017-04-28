@@ -140,7 +140,7 @@ void ProcessFile(string file, string word, ofstream& filePaths)
   string fileType = ".txt";
   if (hasEnding(file,fileType)) {
       fileCount++;
-      if (word.length()>0) {
+      if (word.length()>0 && wordListCounter < 10000) {
 	int matches = stringMatchCount(file,word);
 	if (1) {
 	  fileMatchCount++;
@@ -216,9 +216,11 @@ int stringMatchCount(string file, string word) {
 			}
 			for(int i = 0; i < wordListCounter; i++)
 			{
-				if(wordList[i] == w)
+				if(w == wordList[i].substr(0, wordList[i].find_first_of("#")))
 				{
 					wordPresent = true;
+					string p = "#" + to_string(pathNum) + "$" + to_string(lines) + "%";
+					wordList[i] = wordList[i] + p;
 					//cout << "Present True\n";
 				}
 			}
@@ -228,6 +230,11 @@ int stringMatchCount(string file, string word) {
 				{
 					w.erase(w.size()-1);
 				}*/
+				w += "#";
+				w += to_string(pathNum);
+				w += "$";
+				w += to_string(lines);
+				w += "%";
 				wordList.push_back(w);
 				cout << wordListCounter << endl;
 				wordListCounter++;

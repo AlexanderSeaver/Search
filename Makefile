@@ -4,7 +4,7 @@
 # Put your user name below:
 USER= seavera
 
-CC= g++
+CC= g++ -std=c++11
 
 #For Optimization
 #CFLAGS= -O2
