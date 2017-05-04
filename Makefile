@@ -13,7 +13,13 @@ CFLAGS= -std=c++11
 
 RM= /bin/rm -f
 
-all: SearchBooks testSearch  proofSearch PutCGI PutHTML
+all: SearchBooks testSearch  proofSearch readWordFile PutCGI PutHTML
+
+readWordFile.o: readWordFile.cpp 
+	$(CC) -c $(CFLAGS) readWordFile.cpp
+	
+readWordFile: readWordFile.o
+	$(CC) $(CFLAGS) readWordFile.o -o readWordFile -L/usr/local/lib -lcgicc
 
 SearchBooks.o: SearchBooks.cpp 
 	$(CC) -c $(CFLAGS) SearchBooks.cpp

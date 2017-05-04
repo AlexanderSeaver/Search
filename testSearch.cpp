@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <vector>
 #include <sstream>
+#include <map>
+#include <time.h>
 
 using namespace std;
 
@@ -19,13 +21,17 @@ int fileCount = 0;
 int matchCount = 0;
 int fileMatchCount = 0;
 long long wordCount = 0;
-string delimiters = " ,.;:?'\"()[]";
+string delimiters = " ,.;:?'\"()[]\r";
+char carriage = '\r';
 unsigned short pathNum = 0;
 vector<string> stopList;
 vector<string> wordList;
+map<string, vector<string> > refs;//map of the text files
+map<string, vector<string> >::iterator it;
 int wordListCounter = 0;
 int wordCounter = 0;
 int stopCount = 0;
+clock_t start = clock();
 
 
 int main()
@@ -51,17 +57,19 @@ int main()
 	
 	ProcessDirectory(directory,word,filePaths);
 	
-	
-	cout << "Vector formed, beginning sort." << endl;
-	sort(wordList.begin(), wordList.end());
 	cout << "Sort finished, outputting to text file." << endl;
-	ofstream sortedWords;
+	/*ofstream sortedWords;
 	sortedWords.open("sortedWords.txt");
-	for(int i = 0; i < wordListCounter; i++)
+	for(it = refs.begin(); it != refs.end(); it++)
 	{
-		sortedWords << "!" << wordList[i] << "@" << endl;
+		sortedWords << it->first;
+		for(auto it2 = it->second.begin(); it2 != it->second.end(); it2++)
+		{
+			sortedWords << *it2;
+		}
+		sortedWords << endl;
 	}
-	sortedWords.close();
+	sortedWords.close();*/
 	cout << "The word \"" << word << "\" found " << matchCount << " times in " << fileMatchCount << " books and " << wordCount << " words" << endl; 
 	cout << "Total Books:" << fileCount << endl;
 	filePaths.close();
@@ -95,7 +103,7 @@ void ProcessDirectory(string directory, string word, ofstream& filePaths)
   struct dirent *entity;
   entity = readdir(dir);
 
-  while(entity != NULL && wordListCounter < 25000)
+  while(entity != NULL)
     {
       ProcessEntity(entity,word,filePaths);
       entity = readdir(dir);
@@ -140,13 +148,15 @@ void ProcessFile(string file, string word, ofstream& filePaths)
   string fileType = ".txt";
   if (hasEnding(file,fileType)) {
       fileCount++;
-      if (word.length()>0 && wordListCounter < 10000) {
+      if (word.length()>0) {
 	int matches = stringMatchCount(file,word);
 	if (1) {
 	  fileMatchCount++;
 	  matchCount += matches;
 	  cout << path << file << endl; //when it encounters a new file
 	  log << path << file << endl;
+	  cout << wordListCounter << endl;
+	  //cout << float((clock() - start)/500000)/60 << endl;
 	  pathNum++;
 	}
       }
@@ -157,7 +167,6 @@ void ProcessFile(string file, string word, ofstream& filePaths)
 
 string getNext(string & line) {
   string next;
-  //cout << "$" << line.length();
   size_t start = line.find_first_not_of(delimiters);
   if (start != string::npos) {
     //cout << ":" << start;
@@ -167,7 +176,8 @@ string getNext(string & line) {
       // word with delimiters on both sides
       next = line.substr(start,end-start);
       line.erase(0,end+1);
-    } else {
+    } 
+	else {
       // word with delimiter only at start
       next = line.substr(start);
       line = "";
@@ -202,51 +212,46 @@ int stringMatchCount(string file, string word) {
 		{
 			bool wordPresent = false;
 			bool stopPresent = false;
+			//string position = "@";
+			//position += to_string(pathNum);
+			//position += "#";
+			//position += to_string(lines);
+			unsigned short book = pathNum;
+			unsigned short position = lines;
 			w = getNext(line);
 			transform(w.begin(), w.end(), w.begin(), ::tolower);
 			//cout << "*" << w << "*";
 			wordCount++;
+			for(string::iterator it = w.begin(); it < w.end(); it++)
+			{
+				if(int(*it) > 122 || int(*it) < 65)
+				{
+					stopPresent = true;
+				}
+			}
 			for(int i = 0; i < stopCount; i++)
 			{
 				if(stopList[i] == w)
 				{
 					stopPresent = true;
-					//cout << "Stop True\n";
 				}
 			}
-			for(int i = 0; i < wordListCounter; i++)
+			if(stopPresent == false)
 			{
-				if(w == wordList[i].substr(0, wordList[i].find_first_of("#")))
-				{
-					wordPresent = true;
-					string p = "#" + to_string(pathNum) + "$" + to_string(lines) + "%";
-					wordList[i] = wordList[i] + p;
-					//cout << "Present True\n";
-				}
-			}
-			if(wordPresent == false && stopPresent == false)
-			{
-				/*if(!w.empty() && w[w.size()-1] == '\r')
-				{
-					w.erase(w.size()-1);
-				}*/
-				w += "#";
-				w += to_string(pathNum);
-				w += "$";
-				w += to_string(lines);
-				w += "%";
-				wordList.push_back(w);
-				cout << wordListCounter << endl;
+				//refs[w].push_back(position);
+				//wordListCounter++;
+				ofstream fout;
+				string wordfile = "/home/students/seavera/project6/Search/wordfiles/";
+				wordfile += w;
+				wordfile += ".bin";
+				fout.open(wordfile, ios::out | ios::binary | ios::app);
+				fout.write((char*)&book, sizeof(unsigned short));
+				fout.write((char*)&position, sizeof(unsigned short));
+				fout.close();
 				wordListCounter++;
 			}
-			for(int i = 0; i < wordListCounter; i++)
-			{
-				//cout << "Word is: " << w << endl;
-				//cout << "Vector position " << i << " is: " << wordList[i] << endl;
-			}
-			//cin.get();
+			
 		}
-		//cout << endl << line << endl;
     }
 
     infile.close();
