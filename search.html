@@ -1,0 +1,26 @@
+<!-- Project Gutenberg Word Search 
+     Written by Coire Gavin-Hanner and Alexander Seaver
+     Created 5-3-17 21:36 -->
+
+<html>
+  <head>
+    <title>Project Gutenberg Search</title>
+    <link rel="stylesheet" type="text/css" href="search.css">
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJ\
+fDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script type = "text/javascript" src="search.js"></script>
+  </head>
+  <body onload="initializeXMLHttp()">
+    <h1>Project Gutenberg Search</h1>
+    <h3>Project by Coire Gavin-Hanner and Alex Seaver</h3>
+    <div id="content">Enter a word to search for: </div>
+    <div id="searchBar">
+    	<INPUT NAME="name" TYPE="text" id=searchWord MAXLENGTH=30></TD>
+    	<p>
+        <input type="button" onclick="javascript: getBasicResults ()" name="submit" value="Submit" />
+        </p>
+    </div>
+    <div id="response">
+    </div>
+  </body>
+</html>

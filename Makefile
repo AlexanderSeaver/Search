@@ -13,43 +13,40 @@ CFLAGS= -std=c++11
 
 RM= /bin/rm -f
 
-all: SearchBooks testSearch  proofSearch readWordFile PutCGI PutHTML
+all: testSearch readWordFile searchAjax PutCGI PutHTML
 
-readWordFile.o: readWordFile.cpp 
+readWordFile.o: readWordFile.cpp fifo.h
 	$(CC) -c $(CFLAGS) readWordFile.cpp
 	
-readWordFile: readWordFile.o
-	$(CC) $(CFLAGS) readWordFile.o -o readWordFile -L/usr/local/lib -lcgicc
+readWordFile: readWordFile.o fifo.o
+	$(CC) $(CFLAGS) readWordFile.o fifo.o -o readWordFile -L/usr/local/lib -lcgicc
+	
+searchAjax.o: searchAjax.cpp fifo.h
+	$(CC) -c $(CFLAGS) searchAjax.cpp
+	
+fifo.o:		fifo.cpp fifo.h
+		g++ -c fifo.cpp
+	
+searchAjax: searchAjax.o fifo.o
+	$(CC) $(CFLAGS) searchAjax.o fifo.o -o searchAjax -L/usr/local/lib -lcgicc
 
-SearchBooks.o: SearchBooks.cpp 
-	$(CC) -c $(CFLAGS) SearchBooks.cpp
-
-SearchBooks: SearchBooks.o
-	$(CC) $(CFLAGS) SearchBooks.o -o SearchBooks -L/usr/local/lib -lcgicc
-
-testSearch.o: testSearch.cpp 
+testSearch.o: testSearch.cpp fifo.h
 	$(CC) -c testSearch.cpp 
 
-testSearch: testSearch.o 
-	$(CC) testSearch.o -o testSearch
-	
-proofSearch.o: proofSearch.cpp 
-	$(CC) -c proofSearch.cpp 
+testSearch: testSearch.o fifo.o
+	$(CC) testSearch.o fifo.o -o testSearch	
 
-proofSearch: proofSearch.o 
-	$(CC) proofSearch.o -o proofSearch	
-
-PutCGI: SearchBooks
-	chmod 757 SearchBooks
-	cp SearchBooks /usr/lib/cgi-bin/$(USER)_SearchBooks.cgi 
+PutCGI:
+	chmod 757 searchAjax
+	cp searchAjax /usr/lib/cgi-bin/$(USER)_searchAjax.cgi 
 
 	echo "Current contents of your cgi-bin directory: "
 	ls -l /usr/lib/cgi-bin/
 
 PutHTML:
-	cp SearchBooks.html /var/www/html/class/softdev/$(USER)
-	cp SearchBooks.js /var/www/html/class/softdev/$(USER)
-	cp SearchBooks.css /var/www/html/class/softdev/$(USER)
+	cp search.html /var/www/html/class/softdev/$(USER)
+	cp search.js /var/www/html/class/softdev/$(USER)
+	cp search.css /var/www/html/class/softdev/$(USER)
 
 	echo "Current contents of your HTML directory: "
 	ls -l /var/www/html/class/softdev/$(USER)
