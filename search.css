@@ -1,1 +1,39 @@
-//
+#topBar 
+{
+	position: absolute;
+	background-color: rgb(13, 214, 254);
+	Width: 100%;
+	text-align: center;
+}
+
+#searchBar
+{
+	position: absolute;
+	top: 150px;
+}
+
+#searchresults
+{
+	position: absolute;
+	top: 230px;
+	width: 80%;
+	left: 10%;
+	text-align: center;
+}
+
+#scrollUp
+{
+	position: fixed;
+	width: 10%;
+	height: 10%;
+	left: 90%;
+	top: 45%;
+	background-color: rgb(13, 214, 254);
+}
+
+#searchBar
+{
+	width: 20%
+	text-align: center;
+	left: 40%;
+}

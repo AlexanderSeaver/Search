@@ -26,8 +26,8 @@ char carriage = '\r';
 unsigned short pathNum = 0;
 vector<string> stopList;
 vector<string> wordList;
-map<string, vector<string> > refs;//map of the text files
-map<string, vector<string> >::iterator it;
+map<string, vector<pair<unsigned short, unsigned int> > > refs;//map of the text files
+map<string, vector<pair<unsigned short, unsigned int> > >::iterator it; 
 int wordListCounter = 0;
 int wordCounter = 0;
 int stopCount = 0;
@@ -36,8 +36,9 @@ clock_t start = clock();
 
 int main()
 {
+	cout << "Start of testSearch\n";
 	ifstream fin;
-	fin.open("stopwords.txt");
+	fin.open("txtFiles/stopwords.txt");
 	string stopword;
 	while(!fin.eof()) //make the list of stopwords
 	{
@@ -50,26 +51,12 @@ int main()
 	filePaths.open("filePaths.txt", std::ios_base::app);
 	string word;
 	string directory = "";
-	cout << "Word to search for: ";
-	cin >> word;
-	// Convert to lower case
-	transform(word.begin(), word.end(), word.begin(), ::tolower);
+	word = "a";
 	
 	ProcessDirectory(directory,word,filePaths);
 	
-	cout << "Sort finished, outputting to text file." << endl;
-	/*ofstream sortedWords;
-	sortedWords.open("sortedWords.txt");
-	for(it = refs.begin(); it != refs.end(); it++)
-	{
-		sortedWords << it->first;
-		for(auto it2 = it->second.begin(); it2 != it->second.end(); it2++)
-		{
-			sortedWords << *it2;
-		}
-		sortedWords << endl;
-	}
-	sortedWords.close();*/
+	//cout << "Sort finished, outputting to text file." << endl;
+	
 	cout << "The word \"" << word << "\" found " << matchCount << " times in " << fileMatchCount << " books and " << wordCount << " words" << endl; 
 	cout << "Total Books:" << fileCount << endl;
 	filePaths.close();
@@ -155,8 +142,8 @@ void ProcessFile(string file, string word, ofstream& filePaths)
 	  matchCount += matches;
 	  cout << path << file << endl; //when it encounters a new file
 	  log << path << file << endl;
-	  cout << wordListCounter << endl;
-	  //cout << float((clock() - start)/500000)/60 << endl;
+	  cout << float((clock() - start)/1000000)/60 << endl;
+	  log << float((clock() - start)/1000000)/60 << endl;
 	  pathNum++;
 	}
       }
@@ -202,10 +189,11 @@ int stringMatchCount(string file, string word) {
     //    cout << "open:" << fileWithPath << endl;
 	int lines = 0;
 	int words;
-    while(!infile.eof() && lines++ < 10000)
+	while(!infile.eof() && lines++ < 10000)
 	{
 		words = 0;
 		// normalize to lower case
+		unsigned int position = infile.tellg();
 		getline(infile,line);
 		//cout << line << endl;
 		while (line.length()>0 && words++ < 100) 
@@ -217,7 +205,6 @@ int stringMatchCount(string file, string word) {
 			//position += "#";
 			//position += to_string(lines);
 			unsigned short book = pathNum;
-			unsigned short position = lines;
 			w = getNext(line);
 			transform(w.begin(), w.end(), w.begin(), ::tolower);
 			//cout << "*" << w << "*";
@@ -238,22 +225,54 @@ int stringMatchCount(string file, string word) {
 			}
 			if(stopPresent == false)
 			{
-				//refs[w].push_back(position);
-				//wordListCounter++;
+				pair<unsigned short, unsigned int> posPair;
+				posPair = make_pair(book, position);
+				refs[w].push_back(posPair);
+				wordListCounter++;
+				if(wordListCounter >= 25000000 || pathNum == 32626)
+				{
+					ofstream sortedWords;
+					for(it = refs.begin(); it != refs.end(); it++)
+						
+					{
+						string w2 = it->first;
+						//cout << endl << refs[w2].size() << endl;
+						for(int i =0; i < refs[w2].size(); i++)
+						{
+							cout << "**********FILEWRITE**********\n";
+							unsigned short book = it->second[i].first;
+							//cout << book << endl;
+							//cin.get();
+							unsigned int position = it->second[i].second;
+							//cout << position << endl;
+							//cin.get();
+							string wordfile = "/home/students/seavera/project6/Search/txtFiles/wordfiles/";
+							wordfile += w2;
+							wordfile += ".bin";
+							sortedWords.open(wordfile, ios::out | ios::binary | ios::app);
+							sortedWords.write((char*)&book, sizeof(book));
+							sortedWords.write((char*)&position, sizeof(position));
+							sortedWords.close();
+						}
+					}
+					wordListCounter = 0;
+					refs.clear();
+				}
+				/*
 				ofstream fout;
-				string wordfile = "/home/students/seavera/project6/Search/wordfiles/";
+				string wordfile = "/home/students/seavera/project6/Search/txtFiles/wordfiles/";
 				wordfile += w;
 				wordfile += ".bin";
 				fout.open(wordfile, ios::out | ios::binary | ios::app);
-				fout.write((char*)&book, sizeof(unsigned short));
-				fout.write((char*)&position, sizeof(unsigned short));
+				fout.write((char*)&book, sizeof(book));
+				fout.write((char*)&position, sizeof(position));
 				fout.close();
 				wordListCounter++;
+				*/
 			}
 			
 		}
-    }
-
+	}
     infile.close();
   }catch(ifstream::failure e){
     //cout<<e<<endl;

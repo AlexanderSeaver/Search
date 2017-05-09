@@ -44,9 +44,9 @@ PutCGI:
 	ls -l /usr/lib/cgi-bin/
 
 PutHTML:
-	cp search.html /var/www/html/class/softdev/$(USER)
-	cp search.js /var/www/html/class/softdev/$(USER)
-	cp search.css /var/www/html/class/softdev/$(USER)
+	cp search.html /var/www/html/class/softdev/$(USER)/
+	cp search.js /var/www/html/class/softdev/$(USER)/
+	cp search.css /var/www/html/class/softdev/$(USER)/
 
 	echo "Current contents of your HTML directory: "
 	ls -l /var/www/html/class/softdev/$(USER)
